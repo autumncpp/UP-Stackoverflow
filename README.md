@@ -23,7 +23,7 @@ uint32_t detours::transform_count_nodes_deep_detour(int64_t* _this, std::vector<
 		*(reinterpret_cast<uint64_t*>(_this) + 16) = 0; // found it, set children of ankle to 0
 		return 0; // return 0 so our fix can pick it up
 	}
-	map.push_back(_this);
+	map.push_back(_this); // first time seeing the transform, let's add it to the vector
 	if (*(reinterpret_cast<uint64_t*>(_this) + 16)) // total children in transform
 	{
 		int32_t v1 = 0;
@@ -31,7 +31,7 @@ uint32_t detours::transform_count_nodes_deep_detour(int64_t* _this, std::vector<
 		do
 		{
 			const auto next_transform = *reinterpret_cast<unity_engine::transform**>(v4 + *(reinterpret_cast<uint64_t*>(_this) + 14)); // get next child in queue
-			const int32_t v5 = transform_count_nodes_deep_detour(next_transform, map);
+			const int32_t v5 = transform_count_nodes_deep_detour(next_transform, map); // count the next child
 			if (v5 == 0) // flag was triggered
 			{
 				*(reinterpret_cast<uint64_t*>(_this) + 16) = 0; // set children of toe to 0
