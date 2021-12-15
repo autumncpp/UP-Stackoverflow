@@ -10,7 +10,7 @@ Here's what IDA's pseudocode of the function looks like:
 ![ida screenshot](https://i.invalid.gg/ida64_uMcFOP0QUY.png)
 
 ## Fix
-It's really fucking easy, actually.
+It's really fucking easy, actually. Write a detour, then call the custom implementation with an empty vector.
 
 ```cpp
 uint32_t detours::transform_count_nodes_deep_detour(int64_t* _this, std::vector<int64_t*>& map)
