@@ -16,7 +16,7 @@ The original anti works fine, however when reading a transform with **tons** of 
 ```c
 std::uint32_t patches::transform_count_nodes_deep(std::uintptr_t* _this)
 {
-    static auto genuine_f = get().fetch_patch(xorstr_("CountNodesDeep")).detour.get_original<decltype(&transform_count_nodes_deep)>();
+    static auto genuine_f = get().fetch_patch("CountNodesDeep").detour.get_original<decltype(&transform_count_nodes_deep)>();
     
     std::unordered_set<std::uintptr_t*> v = {};
     return transform_count_nodes_deep_detour(_this, v);
