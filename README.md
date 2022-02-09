@@ -11,7 +11,55 @@ Here's what IDA's pseudocode of the function looks like:
 
 ## Fix
 It's really fucking easy, actually. Write a detour, then call the custom implementation with an empty vector.
+### New (Updated 2-9-2022)
+The original anti works fine, however when reading a transform with **tons** of children, it can take an incredibly long time. This is due to vectors being relatively slow to find data when the container is massive. I've fixed this by using an unordered_set instead, which is C++'s version of a hashset, allowing for faster, constant, lookup speeds.
+```c
+std::uint32_t patches::transform_count_nodes_deep(std::uintptr_t* _this)
+{
+    static auto genuine_f = get().fetch_patch(xorstr_("CountNodesDeep")).detour.get_original<decltype(&transform_count_nodes_deep)>();
+    
+    std::unordered_set<std::uintptr_t*> v = {};
+    return transform_count_nodes_deep_detour(_this, v);
+}
 
+std::uint32_t patches::transform_count_nodes_deep_detour(std::uintptr_t* _this, std::unordered_set<std::uintptr_t*>& map)
+{
+   std::uint32_t v3 = 1;
+    
+    if (_this == nullptr) // check if this is null
+        return v3;
+
+    if (map.contains(_this)) // check if our hashset already contains _this
+    {
+        *(_this + 16) = 0; // found it, set children of ankle to 0
+        return 0; // return 0 so our fix can pick it up
+    }
+    
+    map.insert(_this); // first time seeing the transform, let's add it to the hashset
+    
+    if ( *(_this + 16) ) // total children in transform
+    {
+        std::int32_t v1 = 0;
+        std::int64_t v4 = 0;
+        do
+        {
+            const std::uint32_t v5 = transform_count_nodes_deep_detour(*reinterpret_cast<std::uintptr_t**>(v4 + *(_this + 14)), map); // get next child in queue
+            if (v5 == 0) // flag was triggered
+            {
+                *(_this + 16) = 0; // set children of toe to 0
+                return v3; // return already counted transforms
+            }
+            ++v1; // child_increment
+            v4 += 8; // child queue increment
+            v3 += v5; // increment total transforms found
+        }
+        while ( static_cast<std::uint64_t>(v1) < *(_this + 16) ); // while child_increment < total children in transform
+    }
+    return v3;
+}
+```
+
+### Old
 ```cpp
 uint32_t detours::transform_count_nodes_deep_detour(int64_t* _this, std::vector<int64_t*>& map)
 {
